@@ -1,1 +1,2 @@
 - 2026-04-27: For the time-critical prototype, I used Zustand as the single state source and kept the board implementation simple so gameplay rules can stabilize before swapping the board renderer.
+- 2026-04-27: Oracle review found the highest-priority gameplay gap was undo after terminal states; the prototype now allows undo from won/lost/completed back into playing.

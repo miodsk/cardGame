@@ -160,13 +160,14 @@ export const useGameStore = create<GameState>()((set, get) => ({
     clearResolveTimer()
     const state = get()
 
-    if (state.phase !== 'playing' || state.history.length === 0) {
+    if (state.phase === 'idle' || state.phase === 'resolving' || state.history.length === 0) {
       return
     }
 
     const previous = state.history[state.history.length - 1]
 
     set(() => ({
+      phase: 'playing',
       cards: cloneCards(previous.cards),
       remainingAttempts: previous.remainingAttempts,
       history: state.history.slice(0, -1),

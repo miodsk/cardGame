@@ -1,14 +1,5 @@
-import { useMemo, type CSSProperties } from 'react'
-
+import { GameBoard } from './GameBoard'
 import { useGameStore } from '../store/useGameStore'
-
-function getGridColumns(cardCount: number) {
-  if (cardCount === 4) {
-    return 2
-  }
-
-  return 4
-}
 
 function getStatusText(phase: string, level: number, remainingAttempts: number) {
   if (phase === 'idle') {
@@ -46,7 +37,6 @@ export function GameScreen() {
   const undoLastAttempt = useGameStore((state) => state.undoLastAttempt)
   const closeModal = useGameStore((state) => state.closeModal)
 
-  const columns = useMemo(() => getGridColumns(cards.length || 4), [cards.length])
   const statusText = getStatusText(phase, level, remainingAttempts)
   const isModalOpen = phase === 'won' || phase === 'lost' || phase === 'completed'
 
@@ -84,7 +74,11 @@ export function GameScreen() {
               <button type="button" onClick={restartLevel}>
                 重新挑战
               </button>
-              <button type="button" onClick={undoLastAttempt} disabled={phase !== 'playing' || history.length === 0}>
+              <button
+                type="button"
+                onClick={undoLastAttempt}
+                disabled={(phase !== 'playing' && phase !== 'lost' && phase !== 'won' && phase !== 'completed') || history.length === 0}
+              >
                 回退
               </button>
             </>
@@ -94,44 +88,7 @@ export function GameScreen() {
         <p className="game-status">{statusText}</p>
       </section>
 
-      <section
-        className="game-board"
-        data-testid="game-board"
-        style={{ '--columns': columns } as CSSProperties}
-      >
-        {cards.length === 0 ? (
-          <div className="game-empty">准备好后开始挑战。</div>
-        ) : (
-          cards.map((card) => {
-            const classes = [
-              'game-card',
-              card.isFlipped ? 'is-flipped' : '',
-              card.isEliminated ? 'is-eliminated' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')
-
-            return (
-              <button
-                key={card.id}
-                type="button"
-                className={classes}
-                onClick={() => flipCard(card.id)}
-                disabled={
-                  card.isEliminated ||
-                  phase === 'idle' ||
-                  phase === 'won' ||
-                  phase === 'lost' ||
-                  phase === 'completed'
-                }
-              >
-                <span className="game-card-face game-card-front">{card.value}</span>
-                <span className="game-card-face game-card-back">?</span>
-              </button>
-            )
-          })
-        )}
-      </section>
+      <GameBoard cards={cards} phase={phase} onFlip={flipCard} />
 
       {isModalOpen ? (
         <div className="game-modal-backdrop">
@@ -146,9 +103,16 @@ export function GameScreen() {
               {phase === 'lost' && '机会用完了，再试一次吧。'}
               {phase === 'completed' && '三关全部完成，是否重新开始？'}
             </p>
-            <button type="button" onClick={closeModal}>
-              {phase === 'won' ? '下一关' : '重新挑战'}
-            </button>
+            <div className="game-modal-actions">
+              {history.length > 0 ? (
+                <button type="button" className="game-modal-secondary" onClick={undoLastAttempt}>
+                  回退上一手
+                </button>
+              ) : null}
+              <button type="button" onClick={closeModal}>
+                {phase === 'won' ? '下一关' : '重新挑战'}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

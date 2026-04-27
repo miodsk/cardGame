@@ -83,70 +83,28 @@
 }
 
 .game-board {
-  display: grid;
-  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  gap: 16px;
+  position: relative;
   min-height: 320px;
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: 24px;
-  align-items: stretch;
   background: color-mix(in srgb, var(--bg) 94%, var(--accent) 6%);
+  overflow: hidden;
+}
+
+.game-board canvas {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .game-empty {
-  grid-column: 1 / -1;
   display: grid;
   place-items: center;
-  color: var(--text);
-}
-
-.game-card {
-  position: relative;
-  min-height: 108px;
-  padding: 0;
-  background: linear-gradient(180deg, rgba(170, 59, 255, 0.18), rgba(109, 53, 255, 0.08));
-  color: var(--text-h);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.game-card:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.game-card:disabled {
-  cursor: default;
-}
-
-.game-card.is-eliminated {
-  opacity: 0.18;
-}
-
-.game-card-face {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.game-card-front {
-  opacity: 0;
-}
-
-.game-card-back {
-  opacity: 1;
-}
-
-.game-card.is-flipped .game-card-front,
-.game-card.is-eliminated .game-card-front {
-  opacity: 1;
-}
-
-.game-card.is-flipped .game-card-back,
-.game-card.is-eliminated .game-card-back {
-  opacity: 0;
+  color: var(--text);
+  pointer-events: none;
 }
 
 .game-modal-backdrop {
@@ -167,6 +125,18 @@
   border-radius: 24px;
   background: var(--bg);
   box-shadow: var(--shadow);
+}
+
+.game-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.game-modal-secondary {
+  color: var(--text-h);
+  background: var(--social-bg) !important;
 }
 
 @media (max-width: 768px) {
