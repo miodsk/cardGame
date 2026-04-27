@@ -1,75 +1,86 @@
-# React + TypeScript + Vite
+# 卡牌消除小游戏
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是一个基于 `React`、`TypeScript`、`Vite`、`@pixi/react` 和 `zustand` 实现的卡牌消除小游戏。
 
-Currently, two official plugins are available:
+## 项目简介
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+玩家需要通过连续翻开两张卡牌来寻找配对：
 
-## React Compiler
+- 如果两张卡牌相同，则这对卡牌会被消除
+- 如果两张卡牌不同，则会在结算后翻回背面
+- 在限定翻牌次数内消除全部卡牌即可通关
+- 翻牌次数耗尽但仍未清空棋盘则挑战失败
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+项目当前采用：
 
-Note: This will impact Vite dev & build performances.
+- `zustand` 管理游戏状态与规则
+- `@pixi/react` 渲染卡牌棋盘
+- React DOM 渲染标题、按钮、提示与弹层
 
-## Expanding the ESLint configuration
+## 玩法规则
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 基础规则
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- 每次只能依次翻开两张卡牌
+- 两张卡牌完成一次配对尝试后，才会消耗 1 次机会
+- 同一张卡牌不会因为重复点击而重复结算
+- 已经消除的卡牌不可再次交互
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 胜负规则
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- 在剩余机会大于等于 `0` 的情况下，如果当前关卡所有卡牌都被消除，则判定通关
+- 如果一次结算后机会耗尽，且仍有未消除卡牌，则判定失败
+- 即使这是最后一次机会，只要最后一对成功消除并清空棋盘，仍然算通关
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 关卡设计
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+游戏共 3 个固定关卡：
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| 关卡 | 卡牌数量 | 可用机会 |
+| --- | --- | --- |
+| 第 1 关 | 4 张 | 3 次 |
+| 第 2 关 | 8 张 | 6 次 |
+| 第 3 关 | 16 张 | 12 次 |
+
+关卡按顺序推进：
+
+- 点击“开始挑战”后，从第 1 关开始
+- 第 1、2 关通关后可进入下一关
+- 第 3 关通关后进入“全部完成”状态
+
+## 回退逻辑
+
+项目支持“回退上一手”，规则如下：
+
+- 回退单位是“最近一次完整的配对尝试”
+- 回退会恢复该次尝试前的棋盘状态
+- 回退会返还该次尝试消耗的 1 次机会
+- 当前没有历史记录时，无法回退
+- 当前实现中，终局状态下也可以回退上一手，便于快速修正最后一步操作
+
+## 入口与操作
+
+项目包含以下核心操作：
+
+- `开始挑战`：初始化游戏并进入第 1 关
+- `重新挑战`：重新开始当前关卡
+- `回退`：撤销最近一次已完成的配对尝试
+- `下一关`：在第 1、2 关通关后进入下一关
+
+## 当前实现重点
+
+当前版本重点验证的是：
+
+- 卡牌配对与消除流程
+- 三关关卡与次数限制
+- 通关 / 失败状态切换
+- 回退逻辑
+- `zustand` 状态流与 `@pixi/react` 棋盘渲染协作
+
+暂未扩展以下内容：
+
+- 计分系统
+- 倒计时系统
+- 音效
+- 排行榜 / 持久化
+- 更复杂的动画表现
