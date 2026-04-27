@@ -1,0 +1,1 @@
+- 2026-04-27: For the time-critical prototype, I used Zustand as the single state source and kept the board implementation simple so gameplay rules can stabilize before swapping the board renderer.
